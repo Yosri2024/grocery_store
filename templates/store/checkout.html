@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block title %}Commande — Grocery{% endblock %}
+{% block content %}
+<div class="text-center mb-6">
+  <h1 class="font-display font-black text-4xl tracking-tight inline-flex items-center gap-3">Paiement <span class="text-emerald-600 dark:text-emerald-400">&</span> livraison</h1>
+  <p class="text-sm text-stone-500 dark:text-stone-400 mt-1 inline-flex items-center gap-1.5">Plus que quelques infos et c'est chez vous {% include "store/partials/_icon.html" with name="truck" cls="w-4 h-4" %}</p>
+</div>
+<div class="grid md:grid-cols-5 gap-5 items-start">
+  <form method="post" novalidate class="md:col-span-3 bg-white dark:bg-stone-900 p-6 sm:p-8 rounded-3xl shadow-soft border border-stone-300 dark:border-stone-800">
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+    <div class="mb-5 rounded-2xl bg-red-50 dark:bg-red-950/60 border border-red-200 dark:border-red-900 px-4 py-3 text-sm font-semibold text-red-700 dark:text-red-200">
+      {% for e in form.non_field_errors %}<p>{{ e }}</p>{% endfor %}
+    </div>
+    {% endif %}
+
+    {# ---- 1. Contact ---- #}
+    <fieldset>
+      <legend class="form-section-title">{% include "store/partials/_icon.html" with name="user" cls="w-5 h-5" %} 1 · Contact</legend>
+      <div class="grid gap-4">
+        <div class="{% if form.email.errors %}has-error{% endif %}">
+          <label class="field-label" for="{{ form.email.id_for_label }}">{% include "store/partials/_icon.html" with name="login" cls="w-4 h-4" %} {{ form.email.label }} <span class="req" aria-hidden="true">*</span></label>
+          {{ form.email }}
+          {% for e in form.email.errors %}<p class="field-error">{{ e }}</p>{% endfor %}
+        </div>
+        <div class="grid sm:grid-cols-2 gap-4">
+          <div class="{% if form.first_name.errors %}has-error{% endif %}">
+            <label class="field-label" for="{{ form.first_name.id_for_label }}">{{ form.first_name.label }} <span class="req" aria-hidden="true">*</span></label>
+            {{ form.first_name }}
+            {% for e in form.first_name.errors %}<p class="field-error">{{ e }}</p>{% endfor %}
+          </div>
+          <div class="{% if form.last_name.errors %}has-error{% endif %}">
+            <label class="field-label" for="{{ form.last_name.id_for_label }}">{{ form.last_name.label }} <span class="req" aria-hidden="true">*</span></label>
+            {{ form.last_name }}
+            {% for e in form.last_name.errors %}<p class="field-error">{{ e }}</p>{% endfor %}
+          </div>
+        </div>
+        <div class="{% if form.phone.errors %}has-error{% endif %}">
+          <label class="field-label" for="{{ form.phone.id_for_label }}">{% include "store/partials/_icon.html" with name="user" cls="w-4 h-4" %} {{ form.phone.label }} <span class="text-stone-400 font-medium">(optionnel)</span></label>
+          {{ form.phone }}
+          {% for e in form.phone.errors %}<p class="field-error">{{ e }}</p>{% endfor %}
+        </div>
+      </div>
+    </fieldset>
+
+    {# ---- 2. Livraison ---- #}
+    <fieldset class="mt-7 pt-6 border-t border-stone-300 dark:border-stone-800">
+      <legend class="form-section-title">{% include "store/partials/_icon.html" with name="truck" cls="w-5 h-5" %} 2 · Livraison</legend>
+      <div class="grid gap-4">
+        <div class="{% if form.street.errors %}has-error{% endif %}">
+          <label class="field-label" for="{{ form.street.id_for_label }}">{{ form.street.label }} <span class="req" aria-hidden="true">*</span></label>
+          {{ form.street }}
+          {% for e in form.street.errors %}<p class="field-error">{{ e }}</p>{% endfor %}
+        </div>
+        <div class="grid sm:grid-cols-2 gap-4">
+          <div class="{% if form.city.errors %}has-error{% endif %}">
+            <label class="field-label" for="{{ form.city.id_for_label }}">{{ form.city.label }} <span class="req" aria-hidden="true">*</span></label>
+            {{ form.city }}
+            {% for e in form.city.errors %}<p class="field-error">{{ e }}</p>{% endfor %}
+          </div>
+          <div class="{% if form.zip_code.errors %}has-error{% endif %}">
+            <label class="field-label" for="{{ form.zip_code.id_for_label }}">{{ form.zip_code.label }} <span class="req" aria-hidden="true">*</span></label>
+            {{ form.zip_code }}
+            {% for e in form.zip_code.errors %}<p class="field-error">{{ e }}</p>{% endfor %}
+          </div>
+        </div>
+      </div>
+    </fieldset>
+
+    {# ---- 3. Paiement (cartes radio) ---- #}
+    <fieldset class="mt-7 pt-6 border-t border-stone-300 dark:border-stone-800">
+      <legend class="form-section-title">{% include "store/partials/_icon.html" with name="card" cls="w-5 h-5" %} 3 · {{ form.payment_method.label }} <span class="req" aria-hidden="true">*</span></legend>
+      <div class="grid gap-3" role="radiogroup" aria-label="{{ form.payment_method.label }}">
+        {% for radio in form.payment_method %}
+        <label class="cursor-pointer">
+          {{ radio.tag }}
+          <span class="pay-card">
+            <span class="pay-icon" aria-hidden="true">
+              {% if radio.data.value == 'cash' %}{% include "store/partials/_icon.html" with name="cash" cls="w-6 h-6" %}
+              {% elif radio.data.value == 'card' %}{% include "store/partials/_icon.html" with name="card" cls="w-6 h-6" %}
+              {% else %}{% include "store/partials/_icon.html" with name="bank" cls="w-6 h-6" %}{% endif %}
+            </span>
+            <span class="flex-1">
+              <span class="block font-bold">{{ radio.choice_label }}</span>
+              <span class="block text-xs opacity-70">{% if radio.data.value == 'cash' %}Payez cash à la réception{% elif radio.data.value == 'card' %}Paiement sécurisé par carte{% else %}Virement avant expédition{% endif %}</span>
+            </span>
+            <span class="pay-check" aria-hidden="true">{% include "store/partials/_icon.html" with name="check" cls="w-4 h-4" %}</span>
+          </span>
+        </label>
+        {% endfor %}
+      </div>
+      {% for e in form.payment_method.errors %}<p class="field-error mt-2">{{ e }}</p>{% endfor %}
+    </fieldset>
+
+    <button class="btn-add !py-4 !text-base !rounded-full mt-7">{% include "store/partials/_icon.html" with name="lock" cls="w-5 h-5" %} Payer {{ cart.total }} $</button>
+    <p class="text-xs text-center text-stone-400 mt-3">Paiement simulé — aucune carte débitée · Espèces, carte ou virement</p>
+  </form>
+  <aside class="md:col-span-2 bg-emerald-950 dark:bg-stone-900 dark:border dark:border-stone-800 text-white p-6 rounded-3xl shadow-lift md:sticky md:top-24">
+    <h2 class="font-display font-bold text-xl">Résumé <span class="text-amber-300">({{ cart.count }})</span></h2>
+    <ul class="mt-3 divide-y divide-white/10 dark:divide-stone-800">
+      {% for line in cart.items %}
+      <li class="flex justify-between gap-3 text-sm py-2.5"><span class="truncate"><span class="inline-grid place-items-center w-6 h-6 rounded-lg bg-white/10 font-display font-bold text-xs mr-1.5 align-middle" aria-hidden="true">{{ line.product.name|first|upper }}</span>{{ line.product.name }} <span class="opacity-60">× {{ line.quantity }}</span></span><strong class="tabular-nums whitespace-nowrap">{{ line.subtotal }} $</strong></li>
+      {% endfor %}
+    </ul>
+    <div class="progress-track mt-4"><div class="progress-fill" style="width: {% widthratio cart.total 150 100 %}%"></div></div>
+    <p class="text-xs text-emerald-200/80 mt-1.5 inline-flex items-center gap-1.5">{% include "store/partials/_icon.html" with name="truck" cls="w-3.5 h-3.5" %} Offerte dès 150 $</p>
+    <p class="font-display font-black text-2xl mt-3">Total : {{ cart.total }} $</p>
+    <a href="{% url 'store:cart_detail' %}" class="mt-2 inline-block text-sm font-semibold underline underline-offset-4 opacity-80 hover:opacity-100">← Modifier le panier</a>
+  </aside>
+</div>
+{% endblock %}

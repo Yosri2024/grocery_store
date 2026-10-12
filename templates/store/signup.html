@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Inscription — Grocery{% endblock %}
+{% block content %}
+<div class="max-w-md mx-auto">
+  <div class="hero px-6 py-6 text-white text-center !rounded-b-none">
+    <span class="mx-auto grid place-items-center w-16 h-16 rounded-3xl bg-white/15 border border-white/20" aria-hidden="true">{% include "store/partials/_icon.html" with name="user" cls="w-9 h-9" %}</span>
+    <h1 class="font-display font-black text-3xl mt-2">Créer un compte</h1>
+    <p class="text-sm text-emerald-100/85">Gratuit, en 30 secondes, panier conservé.</p>
+  </div>
+  <div class="bg-white dark:bg-stone-900 px-6 sm:px-8 py-7 rounded-b-3xl shadow-soft border border-t-0 border-stone-300 dark:border-stone-800">
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% if form.non_field_errors %}
+      <div class="mb-4 rounded-2xl bg-red-50 dark:bg-red-950/60 border border-red-200 dark:border-red-900 px-4 py-3 text-sm font-semibold text-red-700 dark:text-red-200">
+        {% for e in form.non_field_errors %}<p>{{ e }}</p>{% endfor %}
+      </div>
+      {% endif %}
+      <div class="grid gap-4">
+        <div class="{% if form.username.errors %}has-error{% endif %}">
+          <label class="field-label" for="{{ form.username.id_for_label }}">{{ form.username.label }} <span class="req" aria-hidden="true">*</span></label>
+          {{ form.username }}
+          {% for e in form.username.errors %}<p class="field-error">{{ e }}</p>{% endfor %}
+        </div>
+        <div class="{% if form.email.errors %}has-error{% endif %}">
+          <label class="field-label" for="{{ form.email.id_for_label }}">{{ form.email.label }} <span class="req" aria-hidden="true">*</span></label>
+          {{ form.email }}
+          {% for e in form.email.errors %}<p class="field-error">{{ e }}</p>{% endfor %}
+        </div>
+        <div class="{% if form.password1.errors %}has-error{% endif %}">
+          <label class="field-label" for="{{ form.password1.id_for_label }}">Mot de passe <span class="req" aria-hidden="true">*</span></label>
+          <div class="relative" x-data="{ show: false, pw: '' }">
+            <input type="password" :type="show ? 'text' : 'password'" name="{{ form.password1.html_name }}" id="{{ form.password1.id_for_label }}"
+                   class="field-input pr-12" placeholder="Mot de passe" autocomplete="new-password" required
+                   @input="pw = $event.target.value"
+                   {% if form.password1.value %}value="{{ form.password1.value }}"{% endif %}>
+            <button type="button" @click="show = !show" :aria-label="show ? 'Masquer le mot de passe' : 'Afficher le mot de passe'" title="Afficher / masquer"
+                    class="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition">
+              <span x-show="!show">{% include "store/partials/_icon.html" with name="eye" cls="w-5 h-5" %}</span>
+              <span x-show="show" x-cloak>{% include "store/partials/_icon.html" with name="eye-off" cls="w-5 h-5" %}</span>
+            </button>
+          </div>
+          {# Checklist animée des règles (miroir du validateur serveur) #}
+          <ul class="pw-rules" aria-live="polite">
+            <li class="pw-rule" :class="pw.length >= 8 && 'ok'"><span class="dot"></span>8 caractères minimum</li>
+            <li class="pw-rule" :class="/\d/.test(pw) && 'ok'"><span class="dot"></span>Un chiffre</li>
+            <li class="pw-rule" :class="/\p{Lu}/u.test(pw) && 'ok'"><span class="dot"></span>Une majuscule</li>
+            <li class="pw-rule" :class="/\p{Ll}/u.test(pw) && 'ok'"><span class="dot"></span>Une minuscule</li>
+            <li class="pw-rule" :class="/[^\p{L}\p{N}]/u.test(pw) && 'ok'"><span class="dot"></span>Un symbole</li>
+          </ul>
+          <div class="pw-track" aria-hidden="true"><div class="pw-fill" :style="'width:' + ([pw.length >= 8, /\d/.test(pw), /\p{Lu}/u.test(pw), /\p{Ll}/u.test(pw), /[^\p{L}\p{N}]/u.test(pw)].filter(Boolean).length / 5 * 100) + '%'"></div></div>
+          {% for e in form.password1.errors %}<p class="field-error">{{ e }}</p>{% endfor %}
+        </div>
+        <div class="{% if form.password2.errors %}has-error{% endif %}">
+          <label class="field-label" for="{{ form.password2.id_for_label }}">Confirmer <span class="req" aria-hidden="true">*</span></label>
+          {{ form.password2 }}
+          {% for e in form.password2.errors %}<p class="field-error">{{ e }}</p>{% endfor %}
+        </div>
+      </div>
+      <button class="btn-add !rounded-full !py-3.5 mt-5">Créer mon compte →</button>
+      <p class="text-sm text-center text-stone-500 dark:text-stone-400 mt-4">Déjà client ? <a href="{% url 'store:login' %}" class="font-bold underline underline-offset-4 text-emerald-700 dark:text-emerald-300">Se connecter</a></p>
+    </form>
+  </div>
+</div>
+{% endblock %}

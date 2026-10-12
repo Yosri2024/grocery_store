@@ -1,0 +1,52 @@
+# Python / Django
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+env/
+ENV/
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+media/
+!media/.gitkeep
+staticfiles/
+
+# Env — jamais commité
+.env
+.env.*
+!.env.example
+
+# PostgreSQL / outils
+*.dump
+*.sql.bak
+pgdata/
+
+# IDE / OS
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Tests / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.hypothesis/
+.tox/
+
+# Node — INTERDIT dans ce projet (aucun npm)
+node_modules/
+package-lock.json

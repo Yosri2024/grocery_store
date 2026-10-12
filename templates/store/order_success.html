@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Merci — Grocery{% endblock %}
+{% block content %}
+<div class="bg-white dark:bg-stone-900 rounded-3xl shadow-lift border border-stone-300 dark:border-stone-800 p-8 sm:p-10 text-center max-w-xl mx-auto relative overflow-hidden">
+  <div class="absolute inset-x-0 top-0 h-2 bg-gradient-to-r from-emerald-500 via-amber-400 to-emerald-500"></div>
+  <span class="mx-auto grid place-items-center w-20 h-20 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300" aria-hidden="true">{% include "store/partials/_icon.html" with name="success" cls="w-11 h-11" %}</span>
+  <h1 class="font-display font-black text-4xl mt-2">Merci {{ order.first_name }} !</h1>
+  <p class="mt-2 text-stone-500 dark:text-stone-400 text-sm">Commande confirmée · on la prépare avec soin.</p>
+  <p class="mt-3"><span class="font-mono text-xs bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 px-3 py-1.5 rounded-full">{{ order.uuid }}</span></p>
+  <p class="mt-3 inline-block font-extrabold text-emerald-950 dark:text-emerald-200 bg-emerald-100 dark:bg-emerald-950/60 px-5 py-2 rounded-full">{{ order.total }} $ · {{ order.get_status_display }} · {{ order.get_payment_method_display }}</p>
+  <ul class="mt-5 text-left divide-y divide-stone-200 dark:divide-stone-800 bg-stone-50 dark:bg-stone-950/50 rounded-2xl px-5">
+    {% for item in order.items.all %}
+    <li class="py-2.5 flex justify-between text-sm"><span>{{ item.product_name }} <span class="text-stone-400">× {{ item.quantity }}</span></span><strong class="tabular-nums">{{ item.subtotal }} $</strong></li>
+    {% endfor %}
+  </ul>
+  <a href="{% url 'store:product_list' %}" class="btn-add !w-auto !px-8 !py-3.5 !rounded-full mt-6">← Retour boutique</a>
+</div>
+{% endblock %}

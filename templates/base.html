@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Grocery Store — fruits et légumes frais du marché, recherche instantanée, panier en un clic.">
+  <meta name="color-scheme" content="light dark">
+  <title>{% block title %}Grocery Store — Frais du marché{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Tailwind sans npm -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['Fraunces', 'Georgia', 'serif'],
+            sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+          },
+          boxShadow: {
+            soft: '0 1px 2px rgba(28,25,23,.05), 0 8px 24px -12px rgba(28,25,23,.18)',
+            lift: '0 2px 4px rgba(28,25,23,.06), 0 20px 44px -16px rgba(6,78,59,.35)',
+          },
+        },
+      },
+    };
+    // Applique le thème AVANT le rendu pour éviter le flash blanc
+    (function () {
+      try {
+        var stored = localStorage.getItem('grocery-theme');
+        var dark = stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        if (dark) document.documentElement.classList.add('dark');
+      } catch (e) { /* ignore */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+  <!-- HTMX : tout ce qui parle au serveur -->
+  <script src="https://unpkg.com/htmx.org@1.9.12" defer></script>
+  <!-- Alpine : état UI local uniquement -->
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
+  <script src="{% static 'js/theme.js' %}" defer></script>
+  <style>[x-cloak]{display:none!important}</style>
+</head>
+<body class="font-sans bg-cream text-stone-900 dark:bg-stone-950 dark:text-stone-100 min-h-screen flex flex-col antialiased selection:bg-amber-200 selection:text-emerald-950" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+<a href="#contenu" class="sr-only focus:not-sr-only focus:absolute focus:m-2 focus:px-3 focus:py-2 focus:bg-white focus:rounded-xl focus:z-50">Aller au contenu</a>
+
+{# ===== Header glass émeraude ===== #}
+<header class="sticky top-0 z-20 header-glass text-white shadow-lg" x-data="{ open: false }">
+  <nav class="max-w-7xl mx-auto flex items-center gap-2 sm:gap-3 px-4 py-3" aria-label="Navigation principale">
+    <a href="{% url 'store:product_list' %}" class="flex items-center gap-2.5 shrink-0 group">
+      <span class="logo-badge" aria-hidden="true">{% include "store/partials/_icon.html" with name="bag" cls="w-7 h-7" %}</span>
+      <span class="font-display font-black text-2xl tracking-tight leading-none">Grocery<span class="text-amber-300">.</span>
+        <span class="block font-sans font-semibold text-[10px] uppercase tracking-[0.22em] text-emerald-200/90">Frais du marché</span>
+      </span>
+    </a>
+    {# ===== Bloc CENTRÉ : recherche + Admin/Panier/Mode/Logout ===== #}
+    <div class="flex-1 min-w-0 flex items-center justify-center gap-2 sm:gap-3 mx-auto">
+    <form class="flex-1 min-w-0 max-w-xl" hx-get="{% url 'store:product_list' %}" hx-target="#product-grid"
+          hx-trigger="keyup changed delay:300ms from:#q" hx-push-url="true" hx-swap="outerHTML" hx-indicator="#search-spinner" role="search">
+      <div class="relative">
+        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400" aria-hidden="true">{% include "store/partials/_icon.html" with name="search" cls="w-5 h-5" %}</span>
+        <label for="q" class="sr-only">Rechercher un produit</label>
+        <input id="q" name="q" value="{{ q|default:'' }}" placeholder="Nom ou #hashtag : pomme, #jus…"
+               class="search-pill" autocomplete="off">
+        <span id="search-spinner" class="htmx-indicator absolute right-4 top-1/2 -translate-y-1/2 text-emerald-200" aria-hidden="true"><span class="spinner"></span></span>
+      </div>
+    </form>
+    <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+      {% if user.is_staff %}
+      <a href="{% url 'admin:index' %}" class="btn-admin hidden sm:inline-flex" title="Administration Django" aria-label="Administration">{% include "store/partials/_icon.html" with name="admin" cls="w-4 h-4" %}</a>
+      {% endif %}
+      <a href="{% url 'store:cart_detail' %}" class="btn-cart" aria-label="Voir le panier">
+        {% include "store/partials/_icon.html" with name="cart" cls="w-5 h-5" %}<span class="hidden sm:inline">Panier</span>
+        <span id="cart-count" class="cart-badge">{{ cart_count }}</span>
+      </a>
+      <button type="button" data-theme-toggle onclick="toggleTheme()" aria-pressed="false" aria-label="Basculer mode nuit / jour"
+              class="icon-btn" title="Passer en mode nuit">
+        <span data-theme-icon-moon class="leading-none" aria-hidden="true">{% include "store/partials/_icon.html" with name="moon" cls="w-5 h-5" %}</span>
+        <span data-theme-icon-sun class="leading-none hidden" aria-hidden="true">{% include "store/partials/_icon.html" with name="sun" cls="w-5 h-5" %}</span>
+      </button>
+      {% if user.is_authenticated %}
+        {# Badge compte connecté : icône + nom d'utilisateur (ex. "admin" = ton superuser) #}
+        <span class="hidden lg:inline-flex items-center gap-[0.4rem] text-[0.85rem] font-extrabold px-[1.1rem] py-[0.55rem] rounded-full bg-white/10 border border-white/15 text-emerald-50" title="Connecté en tant que {{ user.username }}">{% include "store/partials/_icon.html" with name="user" cls="w-4 h-4" %} {{ user.username }}</span>
+        <a href="{% url 'store:logout' %}" class="btn-logout hidden sm:inline-flex" title="Se déconnecter">{% include "store/partials/_icon.html" with name="logout" cls="w-4 h-4" %} Logout</a>
+      {% else %}
+        <a href="{% url 'store:login' %}" class="hidden sm:inline-flex items-center gap-1.5 text-sm font-semibold bg-white text-emerald-950 hover:bg-amber-300 px-4 py-2 rounded-full transition">{% include "store/partials/_icon.html" with name="login" cls="w-4 h-4" %} Login</a>
+      {% endif %}
+      <button class="md:hidden icon-btn !w-9 !h-9" @click="open = !open" aria-label="Ouvrir le menu">{% include "store/partials/_icon.html" with name="menu" cls="w-5 h-5" %}</button>
+    </div>
+    </div>
+  </nav>
+  <div x-show="open" x-cloak x-transition class="md:hidden px-4 pb-4 text-sm text-emerald-50 flex flex-wrap items-center gap-x-4 gap-y-2">
+    {% if user.is_staff %}
+    <a href="{% url 'admin:index' %}" class="btn-admin !px-3 !py-1" title="Administration Django" aria-label="Administration">{% include "store/partials/_icon.html" with name="admin" cls="w-4 h-4" %}</a>
+    {% endif %}
+    {% if user.is_authenticated %}
+      <span class="inline-flex items-center gap-1">{% include "store/partials/_icon.html" with name="user" cls="w-4 h-4" %} {{ user.username }}</span>
+      <a href="{% url 'store:logout' %}" class="btn-logout !px-3 !py-1">{% include "store/partials/_icon.html" with name="logout" cls="w-4 h-4" %} Logout</a>
+    {% else %}
+      <a href="{% url 'store:login' %}" class="underline underline-offset-4 inline-flex items-center gap-1">{% include "store/partials/_icon.html" with name="login" cls="w-4 h-4" %} Login</a>
+    {% endif %}
+    <a href="{% url 'store:cart_detail' %}" class="underline underline-offset-4 inline-flex items-center gap-1">{% include "store/partials/_icon.html" with name="cart" cls="w-4 h-4" %} Panier ({{ cart_count }})</a>
+  </div>
+</header>
+
+<main id="contenu" class="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 w-full flex-1">
+  {% if messages %}{% for m in messages %}
+  <p role="status" class="flash">{{ m }}</p>
+  {% endfor %}{% endif %}
+
+  <div x-data="{ toast: '', show: false, timer: null }"
+       @cart-updated.window="toast = '✓ Ajouté au panier'; show = true; clearTimeout(timer); timer = setTimeout(() => show = false, 2200)"
+       class="pointer-events-none fixed bottom-6 left-1/2 -translate-x-1/2 z-30">
+    <p x-show="show" x-cloak x-transition.scale.origin.bottom class="toast" x-text="toast"></p>
+  </div>
+  {% block content %}{% endblock %}
+</main>
+
+{# ===== Footer riche ===== #}
+<footer class="mt-12 footer-band">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-10 grid gap-8 sm:grid-cols-3">
+    <div>
+      <p class="font-display font-black text-2xl text-white">Grocery<span class="text-amber-300">.</span></p>
+      <p class="mt-2 text-sm text-emerald-100/80 max-w-xs">Fruits & légumes frais du marché, prix doux, panier en un clic.</p>
+    </div>
+    <div class="text-sm">
+      <p class="font-bold text-white uppercase tracking-widest text-xs mb-3">Boutique</p>
+      <ul class="space-y-2 text-emerald-100/85">
+        <li><a class="footer-link inline-flex items-center gap-1.5" href="{% url 'store:product_list' %}">{% include "store/partials/_icon.html" with name="bag" cls="w-4 h-4" %} Tous les produits</a></li>
+        <li><a class="footer-link inline-flex items-center gap-1.5" href="{% url 'store:cart_detail' %}">{% include "store/partials/_icon.html" with name="cart" cls="w-4 h-4" %} Mon panier</a></li>
+        <li><a class="footer-link inline-flex items-center gap-1.5" href="{% url 'store:checkout' %}">{% include "store/partials/_icon.html" with name="card" cls="w-4 h-4" %} Commander</a></li>
+      </ul>
+    </div>
+    <div class="text-sm">
+      <p class="font-bold text-white uppercase tracking-widest text-xs mb-3">Pratique</p>
+      <ul class="space-y-2 text-emerald-100/85">
+        <li class="flex items-center gap-1.5">{% include "store/partials/_icon.html" with name="clock" cls="w-4 h-4" %} Ouvert 7j/7 · 8h–20h</li>
+        <li class="flex items-center gap-1.5">{% include "store/partials/_icon.html" with name="truck" cls="w-4 h-4" %} Livraison dès 150 $ d'achat</li>
+        <li class="flex items-center gap-1.5" aria-hidden="true">{% include "store/partials/_icon.html" with name="moon" cls="w-4 h-4" %} Mode nuit en haut {% include "store/partials/_icon.html" with name="sun" cls="w-4 h-4" %}</li>
+      </ul>
+    </div>
+  </div>
+  <div class="border-t border-white/10">
+    <p class="max-w-7xl mx-auto px-4 sm:px-6 py-4 text-xs text-emerald-100/60">© {% now "Y" %} Grocery Store</p>
+  </div>
+</footer>
+
+<script>
+// CSRF pour HTMX : ajoute X-CSRFToken à chaque requête mutante
+document.body.addEventListener('htmx:configRequest', (e) => {
+  const t = document.querySelector('[name=csrfmiddlewaretoken]');
+  if (t) e.detail.headers['X-CSRFToken'] = t.value;
+});
+// Diffuse un événement global quand le panier change (déclenché par HX-Trigger: cart-updated)
+document.body.addEventListener('cart-updated', () => {
+  window.dispatchEvent(new CustomEvent('cart-updated'));
+});
+</script>
+{% csrf_token %}
+</body>
+</html>

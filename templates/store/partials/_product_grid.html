@@ -1,0 +1,50 @@
+{# Fragment HTMX "_" : grille + pagination. Jamais de page complète ici. #}
+<div id="product-grid">
+  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
+    {% for p in page %}
+    <article class="product-card flex flex-col" style="animation-delay: {{ forloop.counter0 }}0ms">
+      <div class="product-media">
+        {% if p.image %}<img src="{{ p.image.url }}" alt="{{ p.name }}" loading="lazy">{% else %}<span class="font-display font-black text-6xl text-emerald-900/25 dark:text-emerald-100/25" aria-hidden="true">{{ p.name|first|upper }}</span>{% endif %}
+      </div>
+      <div class="p-4 flex flex-col gap-1.5 flex-1">
+        <div class="flex items-center gap-1.5 flex-wrap">
+          <span class="chip-cat">{{ p.category.name }}</span>
+          {% if p.discount_pct %}<span class="chip-promo">−{{ p.discount_pct }}%</span>{% endif %}
+        </div>
+        <a href="{{ p.get_absolute_url }}" class="font-display font-bold text-lg leading-snug hover:text-emerald-700 dark:hover:text-emerald-300 clamp-2">{{ p.name }}</a>
+        <p class="font-extrabold text-xl"> {{ p.price }} <span class="text-sm font-bold text-amber-600 dark:text-amber-400">$ / {{ p.unit }}</span></p>
+        {% if p.tags %}<p class="text-xs text-stone-400 dark:text-stone-500 truncate">#{{ p.tags|join:" #" }}</p>{% endif %}
+        <div class="mt-auto pt-2">
+          {# Badge live "X au panier" — mis à jour en OOB par _cart_lines #}
+          <span id="qty-{{ p.slug }}" class="mb-1 block text-xs font-bold text-emerald-700 dark:text-emerald-300">{% if p.cart_qty %}{% include "store/partials/_icon.html" with name="cart" cls="inline w-3.5 h-3.5 -mt-0.5" %} {{ p.cart_qty }} au panier{% endif %}</span>
+          {% if p.stock > 0 %}
+          <p class="stock-ok mb-1.5"><span class="stock-dot" aria-hidden="true"></span>En stock ({{ p.stock }})</p>
+          <button hx-post="{% url 'store:_cart_add' p.slug %}" hx-target="#cart-lines" hx-swap="outerHTML"
+                  class="btn-add" aria-label="Ajouter {{ p.name }} au panier">{% include "store/partials/_icon.html" with name="cart" cls="w-4 h-4" %} + Panier</button>
+          {% else %}
+          <p class="text-xs font-bold text-red-600 dark:text-red-400 mb-1.5">● Rupture</p>
+          <span class="block text-center text-sm font-semibold bg-stone-100 dark:bg-stone-800 text-stone-400 dark:text-stone-500 px-3 py-2.5 rounded-xl">Indisponible</span>
+          {% endif %}
+        </div>
+      </div>
+    </article>
+    {% empty %}
+    <div class="col-span-full product-card !animation-none p-10 text-center">
+      <span class="mx-auto mb-3 grid place-items-center w-14 h-14 rounded-2xl bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300" aria-hidden="true">{% include "store/partials/_icon.html" with name="search" cls="w-7 h-7" %}</span>
+      <p class="font-display font-bold text-xl">Rien pour {% if q %}« {{ q }} »{% else %}ces filtres{% endif %}</p>
+      <p class="text-sm text-stone-500 dark:text-stone-400 mt-1">Essayez un autre mot ou réinitialisez les filtres.</p>
+      <a href="{% url 'store:product_list' %}" class="mt-4 inline-block btn-filter">Voir tout le catalogue →</a>
+    </div>
+    {% endfor %}
+  </div>
+  <div class="mt-8 flex items-center justify-center gap-3">
+    {% if page.has_previous %}
+    <a href="?page={{ page.previous_page_number }}&q={{ q }}&category={{ cat_slug }}&min_price={{ min_price }}&max_price={{ max_price }}&in_stock={{ in_stock }}&on_sale={{ on_sale }}&sort={{ sort }}" hx-get="?page={{ page.previous_page_number }}&q={{ q }}&category={{ cat_slug }}&min_price={{ min_price }}&max_price={{ max_price }}&in_stock={{ in_stock }}&on_sale={{ on_sale }}&sort={{ sort }}" hx-target="#product-grid" hx-push-url="true" hx-swap="outerHTML" class="btn-filter !bg-white !text-stone-800 dark:!bg-stone-900 dark:!text-stone-100 border-2 border-stone-300 dark:border-stone-700 cursor-pointer">← Préc</a>
+    {% endif %}
+    <span class="text-sm font-semibold text-stone-500 dark:text-stone-400 bg-white dark:bg-stone-900 border-2 border-stone-300 dark:border-stone-700 px-4 py-2 rounded-full shadow-soft">Page {{ page.number }} / {{ page.paginator.num_pages }} · {{ total_count }}</span>
+    {% if page.has_next %}
+    <a href="?page={{ page.next_page_number }}&q={{ q }}&category={{ cat_slug }}&min_price={{ min_price }}&max_price={{ max_price }}&in_stock={{ in_stock }}&on_sale={{ on_sale }}&sort={{ sort }}" hx-get="?page={{ page.next_page_number }}&q={{ q }}&category={{ cat_slug }}&min_price={{ min_price }}&max_price={{ max_price }}&in_stock={{ in_stock }}&on_sale={{ on_sale }}&sort={{ sort }}" hx-target="#product-grid" hx-push-url="true" hx-swap="outerHTML" class="btn-filter !bg-white !text-stone-800 dark:!bg-stone-900 dark:!text-stone-100 border-2 border-stone-300 dark:border-stone-700 cursor-pointer">Suiv →</a>
+    {% endif %}
+  </div>
+</div>
+<div id="cart-lines" class="hidden"></div>

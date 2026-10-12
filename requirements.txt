@@ -1,0 +1,23 @@
+# Python 3.14 — Django 5 — PostgreSQL 16 OBLIGATOIRE (jamais SQLite)
+# psycopg v3 avec extra binary (pas psycopg2)
+# Généré depuis Pipfile.lock (pipenv) — versions vérifiées Python 3.14.7
+Django==5.2.18
+psycopg[binary]==3.3.6
+
+# Config DB + .env
+dj-database-url==3.1.2
+python-decouple==3.8
+
+# Images produits
+Pillow==12.3.0
+
+# Formulaires Tailwind (sans npm)
+django-crispy-forms==2.7
+crispy-tailwind==1.0.3
+
+# HTMX : helper serveur (middleware + trigger)
+django-htmx==1.29.0
+
+# Prod : serveur WSGI + statiques
+gunicorn==26.2.0
+whitenoise==6.12.0

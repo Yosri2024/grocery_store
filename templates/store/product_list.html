@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Produits — Grocery{% endblock %}
+{% block content %}
+{# ===== Hero ===== #}
+<section class="hero px-6 py-8 sm:px-10 sm:py-10 mb-6 text-white">
+  <span class="hero-chip">{% include "store/partials/_icon.html" with name="sparkles" cls="w-4 h-4" %} Marché frais · 7j/7</span>
+  <h1 class="font-display font-black text-4xl sm:text-5xl tracking-tight mt-3">Frais du jour<span class="text-amber-300">.</span></h1>
+  <p class="mt-2 text-emerald-100/90 max-w-lg text-sm sm:text-base">Fruits & légumes du marché, recherche instantanée, panier en un clic. <strong class="text-white">{{ total_count }} produit{{ total_count|pluralize }}</strong> à découvrir.</p>
+</section>
+
+{# ===== Barre d'outils : tri + filtres (panneau inline qui pousse les produits, jamais par-dessus) ===== #}
+<div x-data="{ showFilters: false }">
+  <div class="toolbar flex flex-wrap items-center gap-2 sm:gap-3 px-4 py-3 mb-4">
+    <form hx-get="{% url 'store:product_list' %}" hx-target="#product-grid" hx-push-url="true" hx-swap="outerHTML" class="flex items-center gap-2">
+      <input type="hidden" name="q" value="{{ q }}">
+      <input type="hidden" name="category" value="{{ cat_slug }}">
+      <input type="hidden" name="min_price" value="{{ min_price }}">
+      <input type="hidden" name="max_price" value="{{ max_price }}">
+      <input type="hidden" name="in_stock" value="{{ in_stock }}">
+      <input type="hidden" name="on_sale" value="{{ on_sale }}">
+      <label for="sort" class="sr-only">Trier par</label>
+      <select id="sort" name="sort" onchange="this.form.requestSubmit()" class="select-pill">
+        <option value="newest" {% if sort == 'newest' %}selected{% endif %}>Nouveautés</option>
+        <option value="price_asc" {% if sort == 'price_asc' %}selected{% endif %}>Prix croissant</option>
+        <option value="price_desc" {% if sort == 'price_desc' %}selected{% endif %}>Prix décroissant</option>
+        <option value="name" {% if sort == 'name' %}selected{% endif %}>Nom A–Z</option>
+        <option value="name_desc" {% if sort == 'name_desc' %}selected{% endif %}>Nom Z–A</option>
+        <option value="promo" {% if sort == 'promo' %}selected{% endif %}>Soldes d'abord</option>
+      </select>
+    </form>
+    <button @click="showFilters = !showFilters" :aria-expanded="showFilters.toString()" class="btn-filter ml-auto">{% include "store/partials/_icon.html" with name="filter" cls="w-4 h-4" %} Filtres
+    </button>
+    <a href="{% url 'store:product_list' %}" class="btn-filter btn-amber" title="Réinitialiser les filtres">{% include "store/partials/_icon.html" with name="reset" cls="w-4 h-4" %} <span class="hidden sm:inline">Réinitialiser</span></a>
+  </div>
+  <div x-show="showFilters" x-cloak x-transition class="toolbar p-4 sm:p-5 mb-4">
+    <form id="filter-form" hx-get="{% url 'store:product_list' %}" hx-target="#product-grid" hx-push-url="true" hx-swap="outerHTML" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-[1.2fr_1fr_auto_auto] sm:items-end">
+      <input type="hidden" name="q" value="{{ q }}">
+      <input type="hidden" name="sort" value="{{ sort }}">
+      <div>
+        <label for="f-category" class="block text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400 mb-1">Catégorie</label>
+        <select id="f-category" name="category" class="w-full border-2 border-stone-300 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100 rounded-xl px-3 py-2.5 text-sm">
+          <option value="">Toutes catégories</option>
+          {% for c in categories %}
+          <option value="{{ c.slug }}" {% if c.slug == cat_slug %}selected{% endif %}>{{ c.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <span class="block text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400 mb-1">Prix ($)</span>
+        <div class="flex gap-2">
+          <label class="sr-only" for="f-min">Prix min</label>
+          <input id="f-min" name="min_price" value="{{ min_price }}" placeholder="Min" inputmode="decimal" class="border-2 border-stone-300 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100 rounded-xl w-full px-3 py-2.5 text-sm">
+          <label class="sr-only" for="f-max">Prix max</label>
+          <input id="f-max" name="max_price" value="{{ max_price }}" placeholder="Max" inputmode="decimal" class="border-2 border-stone-300 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100 rounded-xl w-full px-3 py-2.5 text-sm">
+        </div>
+      </div>
+      <label class="text-sm flex items-center gap-2 dark:text-stone-200 font-medium sm:pb-2.5"><input type="checkbox" name="in_stock" {% if in_stock == 'on' %}checked{% endif %} class="accent-emerald-600 w-4 h-4"> En stock seulement</label>
+      <label class="text-sm flex items-center gap-2 dark:text-stone-200 font-medium sm:pb-2.5"><input type="checkbox" name="on_sale" {% if on_sale == 'on' %}checked{% endif %} class="accent-red-600 w-4 h-4"> En solde seulement</label>
+      <button class="btn-add sm:!w-auto sm:!px-8" @click="showFilters = false">Appliquer</button>
+    </form>
+  </div>
+</div>
+
+{% include "store/partials/_product_grid.html" %}
+<script>
+// Après un filtrage prix (HTMX) : affiche le sens auto dans le menu (visuel uniquement).
+// min → "Prix croissant", max seul → "Prix décroissant".
+// Au refresh, le serveur réaffiche le tri réel → Nouveautés.
+document.body.addEventListener('htmx:afterRequest', (e) => {
+  const form = e.target && e.target.closest ? e.target.closest('#filter-form') : null;
+  if (!form) return;
+  const min = form.querySelector('#f-min');
+  const max = form.querySelector('#f-max');
+  const sort = document.getElementById('sort');
+  const hasMin = min && min.value, hasMax = max && max.value;
+  if (sort && sort.value === 'newest' && (hasMin || hasMax)) {
+    sort.value = (!hasMin && hasMax) ? 'price_desc' : 'price_asc';
+  }
+});
+</script>
+{% endblock %}
