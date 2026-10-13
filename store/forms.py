@@ -111,6 +111,80 @@ class CheckoutForm(forms.Form):
         widget=forms.RadioSelect(attrs={"class": "peer sr-only"}),
         initial="cash",
     )
+    # --- Détails carte (requis seulement si paiement par carte, jamais stockés) ---
+    card_number = forms.CharField(
+        label="Numéro de carte", max_length=23, required=False,
+        widget=forms.TextInput(attrs={**INPUT, "placeholder": "4242 4242 4242 4242", "autocomplete": "cc-number", "inputmode": "numeric"}),
+    )
+    card_expiry = forms.CharField(
+        label="Expiration", max_length=5, required=False,
+        widget=forms.TextInput(attrs={**INPUT, "placeholder": "MM/AA", "autocomplete": "cc-exp", "inputmode": "numeric"}),
+    )
+    card_cvc = forms.CharField(
+        label="CVC", max_length=4, required=False,
+        widget=forms.TextInput(attrs={**INPUT, "placeholder": "123", "autocomplete": "cc-csc", "inputmode": "numeric"}),
+    )
+    # --- Détails virement (référence optionnelle, conservée avec la commande) ---
+    transfer_ref = forms.CharField(
+        label="Référence du virement", max_length=60, required=False,
+        widget=forms.TextInput(attrs={**INPUT, "placeholder": "Ex. VIR-2026-001 (optionnel)"}),
+    )
+
+    @staticmethod
+    def _luhn_ok(number):
+        """Contrôle de Luhn (clé de carte). 100% Python."""
+        total = 0
+        for i, ch in enumerate(reversed(number)):
+            d = int(ch)
+            if i % 2 == 1:
+                d *= 2
+                if d > 9:
+                    d -= 9
+            total += d
+        return total % 10 == 0
+
+    def clean_card_number(self):
+        raw = (self.cleaned_data.get("card_number") or "").replace(" ", "")
+        if not raw:
+            return ""
+        if not raw.isdigit() or not 13 <= len(raw) <= 19:
+            raise CoreValidationError("Numéro de carte invalide (13 à 19 chiffres).")
+        if not self._luhn_ok(raw):
+            raise CoreValidationError("Numéro de carte invalide (clé de contrôle).")
+        return raw
+
+    def clean_card_expiry(self):
+        import datetime
+        import re
+
+        raw = (self.cleaned_data.get("card_expiry") or "").strip()
+        if not raw:
+            return ""
+        if not re.fullmatch(r"(0[1-9]|1[0-2])/\d{2}", raw):
+            raise CoreValidationError("Format MM/AA exigé (ex. 09/28).")
+        mm, yy = int(raw[:2]), int(raw[3:])
+        now = datetime.date.today()
+        if (2000 + yy, mm) < (now.year, now.month):
+            raise CoreValidationError("Carte expirée.")
+        return raw
+
+    def clean_card_cvc(self):
+        import re
+
+        raw = (self.cleaned_data.get("card_cvc") or "").strip()
+        if not raw:
+            return ""
+        if not re.fullmatch(r"\d{3,4}", raw):
+            raise CoreValidationError("CVC : 3 ou 4 chiffres.")
+        return raw
+
+    def clean(self):
+        cleaned = super().clean()
+        if cleaned.get("payment_method") == "card":
+            for field in ("card_number", "card_expiry", "card_cvc"):
+                if not cleaned.get(field):
+                    self.add_error(field, "Requis pour le paiement par carte.")
+        return cleaned
 
     def to_order_kwargs(self):
         d = self.cleaned_data
@@ -124,5 +198,7 @@ class CheckoutForm(forms.Form):
                 "city": d["city"],
                 "zip_code": d["zip_code"],
                 "phone": d.get("phone", ""),
+                "transfer_ref": d.get("transfer_ref", ""),
+                # Données carte volontairement NON conservées (démo).
             },
         }

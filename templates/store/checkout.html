@@ -67,10 +67,10 @@
       </div>
     </fieldset>
 
-    {# ---- 3. Paiement (cartes radio) ---- #}
-    <fieldset class="mt-7 pt-6 border-t border-stone-300 dark:border-stone-800">
+    {# ---- 3. Paiement (cartes radio + détails dynamiques) ---- #}
+    <fieldset class="mt-7 pt-6 border-t border-stone-300 dark:border-stone-800" x-data="{ pay: '{{ form.payment_method.value|default:'cash' }}' }">
       <legend class="form-section-title">{% include "store/partials/_icon.html" with name="card" cls="w-5 h-5" %} 3 · {{ form.payment_method.label }} <span class="req" aria-hidden="true">*</span></legend>
-      <div class="grid gap-3" role="radiogroup" aria-label="{{ form.payment_method.label }}">
+      <div class="grid gap-3" role="radiogroup" aria-label="{{ form.payment_method.label }}" @change="pay = $event.target.value">
         {% for radio in form.payment_method %}
         <label class="cursor-pointer">
           {{ radio.tag }}
@@ -82,7 +82,7 @@
             </span>
             <span class="flex-1">
               <span class="block font-bold">{{ radio.choice_label }}</span>
-              <span class="block text-xs opacity-70">{% if radio.data.value == 'cash' %}Payez cash à la réception{% elif radio.data.value == 'card' %}Paiement sécurisé par carte{% else %}Virement avant expédition{% endif %}</span>
+              <span class="block text-xs opacity-70">{% if radio.data.value == 'cash' %}Payez cash à la réception{% elif radio.data.value == 'card' %}Numéro, expiration et CVC{% else %}Virement avant expédition{% endif %}</span>
             </span>
             <span class="pay-check" aria-hidden="true">{% include "store/partials/_icon.html" with name="check" cls="w-4 h-4" %}</span>
           </span>
@@ -90,6 +90,42 @@
         {% endfor %}
       </div>
       {% for e in form.payment_method.errors %}<p class="field-error mt-2">{{ e }}</p>{% endfor %}
+
+      {# Détails carte : visibles si "Carte bancaire" #}
+      <div x-show="pay === 'card'" x-cloak x-transition class="mt-4 rounded-2xl bg-stone-50 dark:bg-stone-950/50 border-2 border-stone-300 dark:border-stone-700 p-4 grid gap-4">
+        <div class="{% if form.card_number.errors %}has-error{% endif %}">
+          <label class="field-label" for="{{ form.card_number.id_for_label }}">{% include "store/partials/_icon.html" with name="card" cls="w-4 h-4" %} {{ form.card_number.label }} <span class="req" aria-hidden="true">*</span></label>
+          {{ form.card_number }}
+          {% for e in form.card_number.errors %}<p class="field-error">{{ e }}</p>{% endfor %}
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div class="{% if form.card_expiry.errors %}has-error{% endif %}">
+            <label class="field-label" for="{{ form.card_expiry.id_for_label }}">{{ form.card_expiry.label }} <span class="req" aria-hidden="true">*</span></label>
+            {{ form.card_expiry }}
+            {% for e in form.card_expiry.errors %}<p class="field-error">{{ e }}</p>{% endfor %}
+          </div>
+          <div class="{% if form.card_cvc.errors %}has-error{% endif %}">
+            <label class="field-label" for="{{ form.card_cvc.id_for_label }}">{% include "store/partials/_icon.html" with name="lock" cls="w-4 h-4" %} {{ form.card_cvc.label }} <span class="req" aria-hidden="true">*</span></label>
+            {{ form.card_cvc }}
+            {% for e in form.card_cvc.errors %}<p class="field-error">{{ e }}</p>{% endfor %}
+          </div>
+        </div>
+        <p class="text-xs text-stone-400">Démo : numéro jamais conservé ni débité. Test : 4242 4242 4242 4242.</p>
+      </div>
+
+      {# Détails virement : RIB boutique + référence #}
+      <div x-show="pay === 'transfer'" x-cloak x-transition class="mt-4 rounded-2xl bg-stone-50 dark:bg-stone-950/50 border-2 border-stone-300 dark:border-stone-700 p-4 grid gap-4">
+        <div class="rounded-xl bg-emerald-950 dark:bg-stone-900 dark:border dark:border-stone-700 text-white p-4 text-sm">
+          <p class="font-bold flex items-center gap-1.5">{% include "store/partials/_icon.html" with name="bank" cls="w-4 h-4" %} Virez à Grocery Store</p>
+          <p class="mt-1 font-mono text-xs sm:text-sm">RIB démo : 200 410 0000000000000001 23</p>
+          <p class="mt-1 text-emerald-200/80 text-xs">Montant : {{ cart.total }} $ · la commande part après réception.</p>
+        </div>
+        <div class="{% if form.transfer_ref.errors %}has-error{% endif %}">
+          <label class="field-label" for="{{ form.transfer_ref.id_for_label }}">{{ form.transfer_ref.label }}</label>
+          {{ form.transfer_ref }}
+          {% for e in form.transfer_ref.errors %}<p class="field-error">{{ e }}</p>{% endfor %}
+        </div>
+      </div>
     </fieldset>
 
     <button class="btn-add !py-4 !text-base !rounded-full mt-7">{% include "store/partials/_icon.html" with name="lock" cls="w-5 h-5" %} Payer {{ cart.total }} $</button>

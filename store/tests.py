@@ -125,6 +125,43 @@ class BoutiqueTest(TestCase):
         resp = self.client.get(reverse("store:checkout"))
         self.assertEqual(resp.status_code, 302)
 
+    def test_commande_carte_valide(self):
+        self._add("pomme-golden", 1)
+        data = dict(VALID_CUSTOMER, payment_method="card",
+                    card_number="4242 4242 4242 4242", card_expiry="12/30", card_cvc="123")
+        resp = self.client.post(reverse("store:checkout"), data)
+        self.assertEqual(resp.status_code, 302)
+        order = Order.objects.get(email="client@test.tn")
+        self.assertEqual(order.payment_method, "card")
+        # Numéro jamais conservé, référence virement vide
+        self.assertNotIn("4242", str(order.shipping_address))
+
+    def test_commande_carte_invalide_refusee(self):
+        self._add("pomme-golden", 1)
+        n = Order.objects.count()
+        data = dict(VALID_CUSTOMER, payment_method="card",
+                    card_number="1234", card_expiry="13/99", card_cvc="1")
+        resp = self.client.post(reverse("store:checkout"), data)
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(Order.objects.count(), n)
+        body = resp.content.decode()
+        self.assertIn("field-error", body)
+
+    def test_commande_virement_avec_reference(self):
+        self._add("banane", 1)
+        data = dict(VALID_CUSTOMER, payment_method="transfer", transfer_ref="VIR-2026-001")
+        resp = self.client.post(reverse("store:checkout"), data)
+        self.assertEqual(resp.status_code, 302)
+        order = Order.objects.get(email="client@test.tn")
+        self.assertEqual(order.shipping_address.get("transfer_ref"), "VIR-2026-001")
+
+    def test_checkout_affiche_sections_dynamiques(self):
+        self._add("pomme-golden", 1)
+        body = self.client.get(reverse("store:checkout")).content.decode()
+        self.assertIn("Numéro de carte", body)
+        self.assertIn("RIB démo", body)
+        self.assertIn("Référence du virement", body)
+
     def test_commande_interdite_staff(self):
         staff_client = Client()
         staff_client.force_login(self.staff)
