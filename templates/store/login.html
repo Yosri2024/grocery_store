@@ -8,7 +8,7 @@
     <p class="text-sm text-emerald-100/85">Connectez-vous pour retrouver votre panier.</p>
   </div>
   <div class="bg-white dark:bg-stone-900 px-6 sm:px-8 py-7 rounded-b-3xl rounded-t-none shadow-soft border border-t-0 border-stone-300 dark:border-stone-800 -mt-0">
-    <form method="post">{% csrf_token %}{{ form|crispy }}<button class="btn-add !rounded-full !py-3.5 mt-4">Se connecter →</button></form>
+    <form method="post" novalidate>{% csrf_token %}{{ form|crispy }}<button class="btn-add !rounded-full !py-3.5 mt-4">Se connecter →</button></form>
     <p class="text-sm text-center text-stone-500 dark:text-stone-400 mt-4">Pas de compte ? <a href="{% url 'store:signup' %}" class="font-bold underline underline-offset-4 text-emerald-700 dark:text-emerald-300">Créer un compte</a></p>
   </div>
 </div>

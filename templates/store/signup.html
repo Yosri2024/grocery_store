@@ -26,9 +26,9 @@
           {{ form.email }}
           {% for e in form.email.errors %}<p class="field-error">{{ e }}</p>{% endfor %}
         </div>
-        <div class="{% if form.password1.errors %}has-error{% endif %}">
+        <div class="{% if form.password1.errors %}has-error{% endif %}" x-data="{ show: false, pw: '', get rules() { return [this.pw.length >= 8, /\d/.test(this.pw), /\p{Lu}/u.test(this.pw), /\p{Ll}/u.test(this.pw), /[^\p{L}\p{N}]/u.test(this.pw)]; }, get n() { return this.rules.filter(Boolean).length; } }">
           <label class="field-label" for="{{ form.password1.id_for_label }}">Mot de passe <span class="req" aria-hidden="true">*</span></label>
-          <div class="relative" x-data="{ show: false, pw: '' }">
+          <div class="relative">
             <input type="password" :type="show ? 'text' : 'password'" name="{{ form.password1.html_name }}" id="{{ form.password1.id_for_label }}"
                    class="field-input pr-12" placeholder="Mot de passe" autocomplete="new-password" required
                    @input="pw = $event.target.value"
@@ -41,13 +41,14 @@
           </div>
           {# Checklist animée des règles (miroir du validateur serveur) #}
           <ul class="pw-rules" aria-live="polite">
-            <li class="pw-rule" :class="pw.length >= 8 && 'ok'"><span class="dot"></span>8 caractères minimum</li>
-            <li class="pw-rule" :class="/\d/.test(pw) && 'ok'"><span class="dot"></span>Un chiffre</li>
-            <li class="pw-rule" :class="/\p{Lu}/u.test(pw) && 'ok'"><span class="dot"></span>Une majuscule</li>
-            <li class="pw-rule" :class="/\p{Ll}/u.test(pw) && 'ok'"><span class="dot"></span>Une minuscule</li>
-            <li class="pw-rule" :class="/[^\p{L}\p{N}]/u.test(pw) && 'ok'"><span class="dot"></span>Un symbole</li>
+            <li class="pw-rule" :class="rules[0] && 'ok'"><span class="dot"></span>8 caractères minimum</li>
+            <li class="pw-rule" :class="rules[1] && 'ok'"><span class="dot"></span>Un chiffre</li>
+            <li class="pw-rule" :class="rules[2] && 'ok'"><span class="dot"></span>Une majuscule</li>
+            <li class="pw-rule" :class="rules[3] && 'ok'"><span class="dot"></span>Une minuscule</li>
+            <li class="pw-rule" :class="rules[4] && 'ok'"><span class="dot"></span>Un symbole</li>
           </ul>
-          <div class="pw-track" aria-hidden="true"><div class="pw-fill" :style="'width:' + ([pw.length >= 8, /\d/.test(pw), /\p{Lu}/u.test(pw), /\p{Ll}/u.test(pw), /[^\p{L}\p{N}]/u.test(pw)].filter(Boolean).length / 5 * 100) + '%'"></div></div>
+          <div class="pw-track" aria-hidden="true"><div class="pw-fill" :style="'width:' + (n / 5 * 100) + '%'"></div></div>
+          <p class="pw-level" :class="n <= 2 ? 'text-red-500 dark:text-red-400' : (n <= 4 ? 'text-amber-500 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400')" x-text="n === 0 ? '' : (n <= 2 ? 'Faible' : (n <= 4 ? 'Moyen' : 'Fort'))"></p>
           {% for e in form.password1.errors %}<p class="field-error">{{ e }}</p>{% endfor %}
         </div>
         <div class="{% if form.password2.errors %}has-error{% endif %}">

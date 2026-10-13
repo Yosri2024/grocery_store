@@ -380,12 +380,12 @@ input:focus, select:focus, textarea:focus { box-shadow: 0 0 0 3px rgba(16, 185, 
 }
 .dark .pw-rule { color: #78716c; }
 .pw-rule .dot {
-  width: 0.9rem; height: 0.9rem; border-radius: 9999px; flex-shrink: 0;
-  border: 2px solid #d6d3d1; background: transparent;
+  width: 1.05rem; height: 1.05rem; border-radius: 9999px; flex-shrink: 0;
+  border: 2px solid #d6d3d1; background: #fff;
   display: inline-grid; place-items: center;
   transition: all 250ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
-.dark .pw-rule .dot { border-color: #57534e; }
+.dark .pw-rule .dot { border-color: #57534e; background: transparent; }
 .pw-rule.ok { color: #059669; }
 .dark .pw-rule.ok { color: #34d399; }
 .pw-rule.ok .dot {
@@ -395,15 +395,17 @@ input:focus, select:focus, textarea:focus { box-shadow: 0 0 0 3px rgba(16, 185, 
   background-size: 0.6rem; background-position: center; background-repeat: no-repeat;
 }
 .pw-track {
-  margin-top: 0.5rem; height: 0.4rem; border-radius: 9999px;
-  background: #f5f5f4; overflow: hidden;
+  margin-top: 0.55rem; height: 0.55rem; border-radius: 9999px;
+  background: #f5f5f4; border: 1px solid #e7e5e4; overflow: hidden;
 }
-.dark .pw-track { background: #292524; }
+.dark .pw-track { background: #292524; border-color: #44403c; }
 .pw-fill {
   height: 100%; width: 0; border-radius: 9999px;
   background: linear-gradient(90deg, #f59e0b, #10b981);
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.55);
   transition: width 300ms ease;
 }
+.pw-level { font-size: 0.78rem; font-weight: 800; margin: 0.3rem 0 0; min-height: 1.1rem; }
 
 /* ---------- Scrollbar discrète ---------- */
 ::-webkit-scrollbar { width: 10px; }
