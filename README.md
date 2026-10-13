@@ -44,4 +44,29 @@ pipenv run python manage.py runserver         # http://127.0.0.1:8000
 pipenv run python manage.py seed_products              # catalogue (idempotent)
 pipenv run python manage.py fetch_photos [slug] [--force]
 pipenv run python manage.py permissions_fr             # tout renommer en FR
+pipenv run python manage.py test                       # 18 tests (base de test dédiée)
 ```
+
+## Mise en production (checklist)
+
+```bash
+# 1. Variables : recopier le bloc PROD de .env.example dans .env
+#    SECRET_KEY fort (50+ caractères), DEBUG=False, domaine réel en
+#    ALLOWED_HOSTS + CSRF_TRUSTED_ORIGINS (https). Sans SECRET_KEY de
+#    production, Django refuse de démarrer (garde-fou intégré).
+
+# 2. Base + données
+psql -U postgres -f sql/01_init.sql
+pipenv run python manage.py migrate
+pipenv run python manage.py createsuperuser
+
+# 3. Statiques + lancement (derrière Nginx/HTTPS)
+pipenv run python manage.py collectstatic --noinput
+pipenv run gunicorn config.wsgi:application --bind 127.0.0.1:8000 --workers 3
+
+# 4. Sauvegarde régulière
+pg_dump -U grocery_user -h 127.0.0.1 grocery_db > backup-$(date +%F).dump
+```
+
+Dès `DEBUG=False` : redirection HTTPS, cookies sécurisés et HSTS activés
+automatiquement. Ne jamais exposer `runserver` ni le `.env` sur Internet.

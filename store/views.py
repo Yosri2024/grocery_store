@@ -2,6 +2,7 @@
 
 from django.contrib import messages
 from django.contrib.auth import login as auth_login, logout as auth_logout
+from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Case, ExpressionWrapper, F, FloatField, Value, When
 from django.http import HttpResponse
@@ -274,6 +275,19 @@ def order_success(request, uuid):
 
     order = get_object_or_404(Order, uuid=uuid)
     return render(request, "store/order_success.html", {"order": order})
+
+
+@login_required
+def order_list(request):
+    """Historique des commandes du client connecté."""
+    from .models import Order
+
+    orders = (
+        Order.objects.filter(user=request.user)
+        .prefetch_related("items__product")
+        .order_by("-created_at")
+    )
+    return render(request, "store/order_list.html", {"orders": orders})
 
 
 def _ping(request):

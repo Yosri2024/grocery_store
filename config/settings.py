@@ -18,6 +18,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # ------------------------------------------------------------------
 SECRET_KEY = config("SECRET_KEY")
 DEBUG = config("DEBUG", default=False, cast=bool)
+
+if not DEBUG and (not SECRET_KEY or SECRET_KEY.startswith("django-insecure-")):
+    raise ImproperlyConfigured("SECRET_KEY de production exigée quand DEBUG=False (voir .env.example).")
 ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="127.0.0.1,localhost", cast=Csv())
 CSRF_TRUSTED_ORIGINS = config(
     "CSRF_TRUSTED_ORIGINS",
@@ -131,6 +134,18 @@ AUTHENTICATION_BACKENDS = [
     "store.backends.EmailBackend",
     "django.contrib.auth.backends.ModelBackend",
 ]
+
+# ------------------------------------------------------------------
+# Durcissement production (actif dès DEBUG=False)
+# ------------------------------------------------------------------
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 31_536_000  # 1 an
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 # ------------------------------------------------------------------
 # Statiques & médias (WhiteNoise, sans npm)

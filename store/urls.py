@@ -9,6 +9,7 @@ urlpatterns = [
     path("produit/<slug:slug>/", views.product_detail, name="product_detail"),
     path("panier/", views.cart_detail, name="cart_detail"),
     path("commande/", views.checkout_view, name="checkout"),
+    path("mes-commandes/", views.order_list, name="order_list"),
     path("commande/<uuid:uuid>/succes/", views.order_success, name="order_success"),
     # Fragments HTMX préfixés "_"
     path("_panier/ajouter/<slug:slug>/", views._cart_add, name="_cart_add"),

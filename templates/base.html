@@ -133,6 +133,9 @@
         <li><a class="footer-link inline-flex items-center gap-1.5" href="{% url 'store:product_list' %}">{% include "store/partials/_icon.html" with name="bag" cls="w-4 h-4" %} Tous les produits</a></li>
         <li><a class="footer-link inline-flex items-center gap-1.5" href="{% url 'store:cart_detail' %}">{% include "store/partials/_icon.html" with name="cart" cls="w-4 h-4" %} Mon panier</a></li>
         <li><a class="footer-link inline-flex items-center gap-1.5" href="{% url 'store:checkout' %}">{% include "store/partials/_icon.html" with name="card" cls="w-4 h-4" %} Commander</a></li>
+        {% if user.is_authenticated %}
+        <li><a class="footer-link inline-flex items-center gap-1.5" href="{% url 'store:order_list' %}">{% include "store/partials/_icon.html" with name="bag" cls="w-4 h-4" %} Mes commandes</a></li>
+        {% endif %}
       </ul>
     </div>
     <div class="text-sm">
