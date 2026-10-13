@@ -118,7 +118,7 @@
         <div class="rounded-xl bg-emerald-950 dark:bg-stone-900 dark:border dark:border-stone-700 text-white p-4 text-sm">
           <p class="font-bold flex items-center gap-1.5">{% include "store/partials/_icon.html" with name="bank" cls="w-4 h-4" %} Virez à Grocery Store</p>
           <p class="mt-1 font-mono text-xs sm:text-sm">RIB démo : 200 410 0000000000000001 23</p>
-          <p class="mt-1 text-emerald-200/80 text-xs">Montant : {{ cart.total }} $ · la commande part après réception.</p>
+          <p class="mt-1 text-emerald-200/80 text-xs">Montant : {{ cart.total }} DT · la commande part après réception.</p>
         </div>
         <div class="{% if form.transfer_ref.errors %}has-error{% endif %}">
           <label class="field-label" for="{{ form.transfer_ref.id_for_label }}">{{ form.transfer_ref.label }}</label>
@@ -128,19 +128,19 @@
       </div>
     </fieldset>
 
-    <button class="btn-add !py-4 !text-base !rounded-full mt-7">{% include "store/partials/_icon.html" with name="lock" cls="w-5 h-5" %} Payer {{ cart.total }} $</button>
+    <button class="btn-add !py-4 !text-base !rounded-full mt-7">{% include "store/partials/_icon.html" with name="lock" cls="w-5 h-5" %} Payer {{ cart.total }} DT</button>
     <p class="text-xs text-center text-stone-400 mt-3">Paiement simulé — aucune carte débitée · Espèces, carte ou virement</p>
   </form>
   <aside class="md:col-span-2 bg-emerald-950 dark:bg-stone-900 dark:border dark:border-stone-800 text-white p-6 rounded-3xl shadow-lift md:sticky md:top-24">
     <h2 class="font-display font-bold text-xl">Résumé <span class="text-amber-300">({{ cart.count }})</span></h2>
     <ul class="mt-3 divide-y divide-white/10 dark:divide-stone-800">
       {% for line in cart.items %}
-      <li class="flex justify-between gap-3 text-sm py-2.5"><span class="truncate"><span class="inline-grid place-items-center w-6 h-6 rounded-lg bg-white/10 font-display font-bold text-xs mr-1.5 align-middle" aria-hidden="true">{{ line.product.name|first|upper }}</span>{{ line.product.name }} <span class="opacity-60">× {{ line.quantity }}</span></span><strong class="tabular-nums whitespace-nowrap">{{ line.subtotal }} $</strong></li>
+      <li class="flex justify-between gap-3 text-sm py-2.5"><span class="truncate"><span class="inline-grid place-items-center w-6 h-6 rounded-lg bg-white/10 font-display font-bold text-xs mr-1.5 align-middle" aria-hidden="true">{{ line.product.name|first|upper }}</span>{{ line.product.name }} <span class="opacity-60">× {{ line.quantity }}</span></span><strong class="tabular-nums whitespace-nowrap">{{ line.subtotal }} DT</strong></li>
       {% endfor %}
     </ul>
     <div class="progress-track mt-4"><div class="progress-fill" style="width: {% widthratio cart.total 150 100 %}%"></div></div>
-    <p class="text-xs text-emerald-200/80 mt-1.5 inline-flex items-center gap-1.5">{% include "store/partials/_icon.html" with name="truck" cls="w-3.5 h-3.5" %} Offerte dès 150 $</p>
-    <p class="font-display font-black text-2xl mt-3">Total : {{ cart.total }} $</p>
+    <p class="text-xs text-emerald-200/80 mt-1.5 inline-flex items-center gap-1.5">{% include "store/partials/_icon.html" with name="truck" cls="w-3.5 h-3.5" %} Offerte dès 150 DT</p>
+    <p class="font-display font-black text-2xl mt-3">Total : {{ cart.total }} DT</p>
     <a href="{% url 'store:cart_detail' %}" class="mt-2 inline-block text-sm font-semibold underline underline-offset-4 opacity-80 hover:opacity-100">← Modifier le panier</a>
   </aside>
 </div>

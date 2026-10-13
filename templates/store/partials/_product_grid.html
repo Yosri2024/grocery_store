@@ -12,11 +12,11 @@
           {% if p.discount_pct %}<span class="chip-promo">−{{ p.discount_pct }}%</span>{% endif %}
         </div>
         <a href="{{ p.get_absolute_url }}" class="font-display font-bold text-lg leading-snug hover:text-emerald-700 dark:hover:text-emerald-300 clamp-2">{{ p.name }}</a>
-        <p class="font-extrabold text-xl"> {{ p.price }} <span class="text-sm font-bold text-amber-600 dark:text-amber-400">$ / {{ p.unit }}</span></p>
+        <p class="font-extrabold text-xl"> {{ p.price }} <span class="text-sm font-bold text-amber-600 dark:text-amber-400">DT / {{ p.unit }}</span></p>
         {% if p.tags %}<p class="text-xs text-stone-400 dark:text-stone-500 truncate">#{{ p.tags|join:" #" }}</p>{% endif %}
         <div class="mt-auto pt-2">
           {# Badge live "X au panier" — mis à jour en OOB par _cart_lines #}
-          <span id="qty-{{ p.slug }}" class="mb-1 block text-xs font-bold text-emerald-700 dark:text-emerald-300">{% if p.cart_qty %}{% include "store/partials/_icon.html" with name="cart" cls="inline w-3.5 h-3.5 -mt-0.5" %} {{ p.cart_qty }} au panier{% endif %}</span>
+          <span id="qty-{{ p.slug }}" class="mb-1 block text-xs font-bold text-red-600 dark:text-red-400">{% if p.cart_qty %}{% include "store/partials/_icon.html" with name="cart" cls="inline w-3.5 h-3.5 -mt-0.5" %} {{ p.cart_qty }} au panier{% endif %}</span>
           {% if p.stock > 0 %}
           <p class="stock-ok mb-1.5"><span class="stock-dot" aria-hidden="true"></span>En stock ({{ p.stock }})</p>
           <button hx-post="{% url 'store:_cart_add' p.slug %}" hx-target="#cart-lines" hx-swap="outerHTML"

@@ -328,7 +328,7 @@ class Order(models.Model):
         ]
 
     def __str__(self):
-        return f"Commande {self.uuid.hex[:8]} — {self.total} $"
+        return f"Commande {self.uuid.hex[:8]} — {self.total} DT"
 
     @classmethod
     def create_from_cart(cls, cart, **customer):

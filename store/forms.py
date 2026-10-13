@@ -94,12 +94,11 @@ class CheckoutForm(forms.Form):
     zip_code = forms.CharField(
         label="Code postal", max_length=20,
         validators=[RegexValidator(r"^[0-9A-Za-z\- ]{3,20}$", "Code postal invalide.")],
-        widget=forms.TextInput(attrs={**INPUT, "placeholder": "2052", "autocomplete": "postal-code", "inputmode": "numeric"}),
+        widget=forms.TextInput(attrs={**INPUT, "placeholder": "XXXX", "autocomplete": "postal-code", "inputmode": "numeric"}),
     )
     phone = forms.CharField(
         label="Téléphone", max_length=30, required=False,
-        validators=[RegexValidator(r"^\+?[0-9 ]{6,30}$", "Téléphone invalide.")],
-        widget=forms.TextInput(attrs={**INPUT, "placeholder": "99 999 999", "autocomplete": "tel", "inputmode": "tel"}),
+        widget=forms.TextInput(attrs={**INPUT, "placeholder": "XX XXX XXX", "autocomplete": "tel", "inputmode": "tel"}),
     )
     payment_method = forms.ChoiceField(
         label="Moyen de paiement",
@@ -176,6 +175,15 @@ class CheckoutForm(forms.Form):
             return ""
         if not re.fullmatch(r"\d{3,4}", raw):
             raise CoreValidationError("CVC : 3 ou 4 chiffres.")
+        return raw
+
+    def clean_phone(self):
+        """8 chiffres, espaces tolérés. 100% Python."""
+        raw = (self.cleaned_data.get("phone") or "").replace(" ", "")
+        if not raw:
+            return ""
+        if not raw.isdigit() or len(raw) != 8:
+            raise CoreValidationError("8 chiffres exigés.")
         return raw
 
     def clean(self):

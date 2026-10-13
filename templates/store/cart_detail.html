@@ -5,19 +5,19 @@
   <span class="grid place-items-center w-14 h-14 rounded-2xl bg-white/15 border border-white/20 shrink-0" aria-hidden="true">{% include "store/partials/_icon.html" with name="cart" cls="w-8 h-8" %}</span>
   <div>
     <h1 class="font-display font-black text-3xl tracking-tight">Votre panier</h1>
-    <p class="text-emerald-100/85 text-sm mt-0.5">{% if cart.count %}{{ cart.count }} article{{ cart.count|pluralize }} · {{ cart.total }} ${% else %}Encore vide — le marché vous attend{% endif %}</p>
+    <p class="text-emerald-100/85 text-sm mt-0.5">{% if cart.count %}{{ cart.count }} article{{ cart.count|pluralize }} · {{ cart.total }} DT{% else %}Encore vide — le marché vous attend{% endif %}</p>
   </div>
 </div>
 {% include "store/partials/_cart_lines.html" %}
 {% if cart.count %}
 <div class="mt-5 bg-emerald-950 dark:bg-stone-900 dark:border dark:border-stone-800 text-white rounded-3xl p-5 sm:p-6 shadow-lift">
-  <p class="text-sm font-semibold text-emerald-200 flex items-center gap-1.5">{% include "store/partials/_icon.html" with name="truck" cls="w-4 h-4" %} Livraison offerte dès 150 $</p>
+  <p class="text-sm font-semibold text-emerald-200 flex items-center gap-1.5">{% include "store/partials/_icon.html" with name="truck" cls="w-4 h-4" %} Livraison offerte dès 150 DT</p>
   <div class="progress-track mt-2"><div class="progress-fill" style="width: {% widthratio cart.total 150 100 %}%"></div></div>
   <div class="mt-4 flex flex-wrap gap-3">
     {% if user.is_staff %}
     <span class="inline-flex items-center font-bold px-6 py-3.5 rounded-full bg-stone-200 dark:bg-stone-800 text-stone-500 dark:text-stone-400 cursor-not-allowed" title="Compte équipe : commande réservée aux clients">Commander désactivé (compte équipe)</span>
     {% else %}
-    <a href="{% url 'store:checkout' %}" class="inline-flex items-center gap-2 bg-amber-400 hover:bg-amber-300 text-emerald-950 font-extrabold px-7 py-3.5 rounded-full shadow transition hover:-translate-y-0.5">Commander {{ cart.total }} $ →</a>
+    <a href="{% url 'store:checkout' %}" class="inline-flex items-center gap-2 bg-amber-400 hover:bg-amber-300 text-emerald-950 font-extrabold px-7 py-3.5 rounded-full shadow transition hover:-translate-y-0.5">Commander {{ cart.total }} DT →</a>
     {% endif %}
     <a href="{% url 'store:product_list' %}" class="inline-flex items-center font-bold px-6 py-3.5 rounded-full border border-white/25 hover:bg-white/10 transition">← Continuer mes courses</a>
   </div>

@@ -125,6 +125,19 @@ class BoutiqueTest(TestCase):
         resp = self.client.get(reverse("store:checkout"))
         self.assertEqual(resp.status_code, 302)
 
+    def test_commande_telephone_et_cp_formats(self):
+        self._add("pomme-golden", 1)
+        base = dict(VALID_CUSTOMER)
+        for phone in ["123", "999999999", "abcdefgh", "99-999-999"]:
+            resp = self.client.post(reverse("store:checkout"), dict(base, phone=phone))
+            self.assertEqual(resp.status_code, 200, f"téléphone {phone!r} accepté !")
+        resp = self.client.post(reverse("store:checkout"), dict(base, zip_code="AB"))
+        self.assertEqual(resp.status_code, 200)
+        resp = self.client.post(reverse("store:checkout"), dict(base, phone="25876411", zip_code="2052"))
+        self.assertEqual(resp.status_code, 302)
+        order = Order.objects.get(email="client@test.tn")
+        self.assertEqual(order.shipping_address["phone"], "25876411")
+
     def test_commande_carte_valide(self):
         self._add("pomme-golden", 1)
         data = dict(VALID_CUSTOMER, payment_method="card",

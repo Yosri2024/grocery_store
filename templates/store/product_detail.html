@@ -17,8 +17,8 @@
       {% if product.stock > 0 %}<span class="stock-ok"><span class="stock-dot" aria-hidden="true"></span>En stock</span>{% else %}<span class="text-xs font-bold text-red-600">● Rupture</span>{% endif %}
     </div>
     <h1 class="font-display font-black text-4xl tracking-tight mt-3">{{ product.name }}</h1>
-    <p class="font-display font-black text-3xl mt-2">{{ product.price }} <span class="text-lg font-sans font-bold text-amber-600 dark:text-amber-400">$ / {{ product.unit }}</span></p>
-    {% if product.discount_pct %}<p class="text-sm font-semibold text-red-600 dark:text-red-400 mt-1">Ancien prix : <s>{{ product.old_price }} $</s> — vous économisez {{ product.discount_pct }}%</p>{% endif %}
+    <p class="font-display font-black text-3xl mt-2">{{ product.price }} <span class="text-lg font-sans font-bold text-amber-600 dark:text-amber-400">DT / {{ product.unit }}</span></p>
+    {% if product.discount_pct %}<p class="text-sm font-semibold text-red-600 dark:text-red-400 mt-1">Ancien prix : <s>{{ product.old_price }} DT</s> — vous économisez {{ product.discount_pct }}%</p>{% endif %}
     <p class="mt-4 text-stone-600 dark:text-stone-300 leading-relaxed">{{ product.description|default:"Produit frais du marché, sélectionné chaque matin par nos soins." }}</p>
     {% if product.tags %}<p class="mt-3 text-xs font-semibold text-stone-400 dark:text-stone-500">#{{ product.tags|join:" #" }}</p>{% endif %}
     <p class="mt-2 text-xs text-stone-400 flex items-center gap-3"><span class="inline-flex items-center gap-1">{% include "store/partials/_icon.html" with name="box" cls="w-3.5 h-3.5" %} Stock : {{ product.stock }}</span>·<span class="inline-flex items-center gap-1">{% include "store/partials/_icon.html" with name="tag" cls="w-3.5 h-3.5" %} /{{ product.unit }}</span></p>

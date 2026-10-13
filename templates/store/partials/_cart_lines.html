@@ -1,7 +1,7 @@
 {# Fragment HTMX "_" : lignes panier + pastille header via OOB #}
-<span id="cart-count" hx-swap-oob="true">{{ cart.count }}</span>
+<span id="cart-count" hx-swap-oob="true" class="cart-badge">{{ cart.count }}</span>
 {% if updated_slug %}
-<span id="qty-{{ updated_slug }}" hx-swap-oob="true">{% if updated_qty %}{% include "store/partials/_icon.html" with name="cart" cls="inline w-3.5 h-3.5 -mt-0.5" %} {{ updated_qty }} au panier{% endif %}</span>
+<span id="qty-{{ updated_slug }}" hx-swap-oob="true" class="mb-1 block text-xs font-bold text-red-600 dark:text-red-400">{% if updated_qty %}{% include "store/partials/_icon.html" with name="cart" cls="inline w-3.5 h-3.5 -mt-0.5" %} {{ updated_qty }} au panier{% endif %}</span>
 {% endif %}
 <div id="cart-lines" class="bg-white dark:bg-stone-900 rounded-3xl shadow-soft border border-stone-300 dark:border-stone-800 divide-y divide-stone-200 dark:divide-stone-800 overflow-hidden">
   {% for line in cart.items %}
@@ -9,14 +9,14 @@
     <span class="thumb font-display font-black text-xl text-emerald-900/60 dark:text-emerald-100/60" aria-hidden="true">{{ line.product.name|first|upper }}</span>
     <div class="flex-1 min-w-0">
       <p class="font-bold truncate">{{ line.product.name }}</p>
-      <p class="text-xs text-stone-500 dark:text-stone-400">{{ line.product.price }} $ / {{ line.product.unit }}</p>
+      <p class="text-xs text-stone-500 dark:text-stone-400">{{ line.product.price }} DT / {{ line.product.unit }}</p>
     </div>
     <div class="stepper dark:text-stone-100">
       <button hx-post="{% url 'store:_cart_minus' line.product.slug %}" hx-target="#cart-lines" hx-swap="outerHTML" aria-label="Retirer un {{ line.product.name }}">−</button>
       <span class="w-8 text-center font-extrabold tabular-nums">{{ line.quantity }}</span>
       <button hx-post="{% url 'store:_cart_add' line.product.slug %}" hx-target="#cart-lines" hx-swap="outerHTML" aria-label="Ajouter un {{ line.product.name }}">+</button>
     </div>
-    <p class="w-20 text-right font-extrabold tabular-nums">{{ line.subtotal }} $</p>
+    <p class="w-20 text-right font-extrabold tabular-nums">{{ line.subtotal }} DT</p>
     <!-- Étape 1 (Alpine local) : corbeille → demande inline, pas de popup JS -->
     <button x-show="!confirmDelete" @click="confirmDelete = true" aria-label="Supprimer {{ line.product.name }}"
             class="w-8 h-8 grid place-items-center rounded-full text-stone-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950 transition">{% include "store/partials/_icon.html" with name="trash" cls="w-5 h-5" %}</button>
@@ -38,7 +38,7 @@
   {% if cart.count %}
   <div class="px-5 py-4 bg-emerald-50/60 dark:bg-emerald-950/30 flex items-center justify-between">
     <span class="text-sm font-semibold text-stone-500 dark:text-stone-400">{{ cart.count }} article{{ cart.count|pluralize }}</span>
-    <span class="font-display font-black text-2xl">Total : {{ cart.total }} $</span>
+    <span class="font-display font-black text-2xl">Total : {{ cart.total }} DT</span>
   </div>
   {% endif %}
 </div>
